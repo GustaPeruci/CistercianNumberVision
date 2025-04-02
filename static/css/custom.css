@@ -1,0 +1,79 @@
+/* Custom CSS to enhance the Bootstrap theme */
+
+.cistercian-canvas {
+    width: 300px;
+    height: 400px;
+    border: 1px solid #6c757d;
+    margin: 0 auto;
+    display: block;
+    background-color: #fff;
+}
+
+.cistercian-image {
+    max-width: 300px;
+    max-height: 400px;
+    margin: 0 auto;
+    display: block;
+    background-color: #fff;
+}
+
+.result-container {
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.drag-drop-area {
+    border: 2px dashed #6c757d;
+    border-radius: 5px;
+    padding: 25px;
+    text-align: center;
+    margin: 20px auto;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.drag-drop-area:hover, .drag-drop-area.active {
+    background-color: rgba(108, 117, 125, 0.1);
+}
+
+.canvas-container {
+    position: relative;
+    width: 300px;
+    margin: 0 auto;
+}
+
+.canvas-tools {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.canvas-tools button {
+    margin: 0 5px;
+}
+
+.tab-content {
+    padding-top: 20px;
+}
+
+/* Loading indicator */
+.loading {
+    display: none;
+    text-align: center;
+    margin: 10px auto;
+}
+
+.loading .spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Error message styling */
+.error-message {
+    color: var(--bs-danger);
+    text-align: center;
+    margin: 10px auto;
+    font-weight: bold;
+}
