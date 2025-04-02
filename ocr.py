@@ -2,7 +2,8 @@ import cv2
 import numpy as np
 import logging
 
-# Set up logging
+# Set up logging with DEBUG level
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 def preprocess_image(image):
@@ -50,31 +51,39 @@ def find_stem_and_quadrants(binary_image):
     Returns:
         Dictionary with stem coordinates and quadrant boundaries
     """
-    # If no contours are found, create default quadrants based on image size
+    # Get image dimensions
     height, width = binary_image.shape
+    logger.debug(f"Image dimensions: {width}x{height}")
     
     # Try to find contours
     contours, _ = cv2.findContours(binary_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
-    if not contours:
+    if not contours or len(contours) == 0:
         logger.warning("No contours found in the image, using default quadrants")
         # Use the entire image and divide it into quadrants
         x, y = 0, 0
         w, h = width, height
     else:
+        # Count the number of contours found
+        logger.debug(f"Found {len(contours)} contours")
+        
         # Combine all contours to get the bounding rectangle of the entire symbol
         all_points = np.concatenate([cnt for cnt in contours])
         x, y, w, h = cv2.boundingRect(all_points)
         
+        # Log the bounding rectangle
+        logger.debug(f"Bounding rectangle: x={x}, y={y}, width={w}, height={h}")
+        
         # Ensure we have a reasonable size
         if w < 20 or h < 20:
-            logger.warning("Contour too small, using default quadrants")
+            logger.warning(f"Contour too small (w={w}, h={h}), using default quadrants")
             x, y = 0, 0
             w, h = width, height
     
     # Find the approximate center of the symbol
     center_x = x + w // 2
     center_y = y + h // 2
+    logger.debug(f"Center point: ({center_x}, {center_y})")
     
     # Estimate the stem position (vertical line through center)
     # In a proper Cistercian numeral, the stem divides the symbol vertically
@@ -82,18 +91,26 @@ def find_stem_and_quadrants(binary_image):
     stem_top = y
     stem_bottom = y + h
     
-    # Define the four quadrants
+    # Define the four quadrants with clear naming
+    # Each quadrant is defined as (x1, y1, x2, y2) coordinates
+    # Make sure these are integers to avoid indexing issues
     quadrants = {
-        'top-left': (x, y, stem_x, center_y),
-        'top-right': (stem_x, y, x + w, center_y),
-        'bottom-left': (x, center_y, stem_x, y + h),
-        'bottom-right': (stem_x, center_y, x + w, y + h)
+        'top-left': (int(x), int(y), int(stem_x), int(center_y)),
+        'top-right': (int(stem_x), int(y), int(x + w), int(center_y)),
+        'bottom-left': (int(x), int(center_y), int(stem_x), int(y + h)),
+        'bottom-right': (int(stem_x), int(center_y), int(x + w), int(y + h))
     }
     
+    # Log the quadrant coordinates for debugging
+    for name, coords in quadrants.items():
+        logger.debug(f"Quadrant {name}: {coords}")
+    
     # Debug: Draw quadrant boundaries on a copy of the image for visualization
-    # visual_debug = cv2.cvtColor(binary_image.copy(), cv2.COLOR_GRAY2BGR)
-    # cv2.line(visual_debug, (stem_x, stem_top), (stem_x, stem_bottom), (0, 255, 0), 2)
-    # cv2.line(visual_debug, (x, center_y), (x + w, center_y), (0, 255, 0), 2)
+    visual_debug = cv2.cvtColor(binary_image.copy(), cv2.COLOR_GRAY2BGR)
+    cv2.line(visual_debug, (stem_x, stem_top), (stem_x, stem_bottom), (0, 255, 0), 2)
+    cv2.line(visual_debug, (x, center_y), (x + w, center_y), (0, 255, 0), 2)
+    # We're not saving the debug image here as we don't have write permissions
+    # but we can uncomment this if needed for debugging
     # cv2.imwrite('/tmp/debug_quadrants.png', visual_debug)
     
     return {
@@ -183,53 +200,83 @@ def detect_features_in_quadrant(binary_image, quadrant_coords):
             if 30 < angle < 60 or 120 < angle < 150:  # Diagonal angles
                 diagonal_lines += 1
     
-    # Improved digit recognition based on feature combination
-    # Digit 1: horizontal line
-    if horizontal_lines == 1 and vertical_lines == 0 and diagonal_lines == 0:
+    # Simplify the feature detection for more reliable results
+    # We'll check the most distinctive features first
+    
+    # Debug: Log the quadrant features
+    logger.debug(f"Quadrant features: horiz={horizontal_lines}, vert={vertical_lines}, diag={diagonal_lines}, rect={rectangles}, contours={num_contours}, fill_ratio={fill_ratio:.2f}")
+    
+    # Digit 1: Simple horizontal line
+    if horizontal_lines >= 1 and vertical_lines == 0 and diagonal_lines == 0 and num_contours <= 2:
         return 1
     
-    # Digit 2: diagonal line (top-left to bottom-right or top-right to bottom-left)
-    elif horizontal_lines == 0 and vertical_lines == 0 and diagonal_lines == 1:
-        # Check for direction based on quadrant location
-        if 'top-right' in str(quadrant_coords) or 'bottom-left' in str(quadrant_coords):
+    # Digit 2: Simple diagonal line (going up)
+    if diagonal_lines == 1 and horizontal_lines == 0 and vertical_lines == 0:
+        # For quadrants "top-right" and "bottom-left"
+        if ('top-right' in str(quadrant_coords) or 'bottom-left' in str(quadrant_coords)):
             return 2
-        else:
-            return 6
+        # For other quadrants, this is more likely to be digit 6
     
-    # Digit 3: Horizontal line with diagonal (like an arrowhead)
-    elif horizontal_lines >= 1 and diagonal_lines >= 1 and vertical_lines == 0:
-        # Direction depends on quadrant
-        if 'top-right' in str(quadrant_coords) or 'bottom-left' in str(quadrant_coords):
+    # Digit 3: Combination of horizontal and diagonal lines (going up)
+    if horizontal_lines >= 1 and diagonal_lines == 1 and num_contours <= 3:
+        # For quadrants "top-right" and "bottom-left"
+        if ('top-right' in str(quadrant_coords) or 'bottom-left' in str(quadrant_coords)):
             return 3
-        else:
-            return 7
+        # For other quadrants, this is more likely to be digit 7
     
-    # Digit 4: Horizontal line with vertical extension (L shape)
-    elif (horizontal_lines >= 1 and vertical_lines >= 1) or num_contours == 2:
+    # Digit 4: L-shape (horizontal and vertical lines)
+    if horizontal_lines >= 1 and vertical_lines >= 1 and diagonal_lines == 0:
         return 4
     
-    # Digit 5: Rectangle or high fill ratio indicating a complex shape
-    elif rectangles >= 1 or fill_ratio > 0.4:
+    # Digit 5: Presence of a rectangle or high fill ratio (complex shape)
+    if (rectangles >= 1 and fill_ratio > 0.25) or fill_ratio > 0.35:
         return 5
     
-    # Digit 6: Diagonal line (flipped compared to 2)
-    elif horizontal_lines == 0 and vertical_lines == 0 and diagonal_lines == 1:
-        # This check is redundant with digit 2, but we'll keep it for clarity
-        return 6
+    # Digit 6: Simple diagonal line (going down)
+    if diagonal_lines == 1 and horizontal_lines == 0 and vertical_lines == 0:
+        # For quadrants "top-left" and "bottom-right"
+        if ('top-left' in str(quadrant_coords) or 'bottom-right' in str(quadrant_coords)):
+            return 6
+        # For other quadrants, this is more likely to be digit 2
     
-    # Digit 7: Like digit 3 but flipped
-    elif horizontal_lines >= 1 and diagonal_lines >= 1:
-        return 7
+    # Digit 7: Combination of horizontal and diagonal lines (going down)
+    if horizontal_lines >= 1 and diagonal_lines >= 1 and num_contours <= 3:
+        # For quadrants "top-left" and "bottom-right"
+        if ('top-left' in str(quadrant_coords) or 'bottom-right' in str(quadrant_coords)):
+            return 7
+        # For other quadrants, this is more likely to be digit 3
     
-    # Digit 8: V shape or two diagonal lines
-    elif diagonal_lines >= 2:
+    # Digit 8: V-shape (two diagonal lines)
+    if diagonal_lines >= 2 or (num_contours == 1 and len(contours[0]) >= 6):
         return 8
     
-    # Digit 9: Circle or square shape
-    elif rectangles >= 1 or (num_contours == 1 and cv2.contourArea(contours[0]) > 0.3 * quadrant_area):
+    # Digit 9: Rectangular or square shape with high area coverage
+    if (rectangles >= 1) or (num_contours == 1 and cv2.contourArea(contours[0]) > 0.25 * quadrant_area):
         return 9
     
-    # Default fallback
+    # Secondary checks for harder-to-distinguish digits
+    
+    # Additional check for digit 1 (simple horizontal line with less strict conditions)
+    if horizontal_lines >= 1 and diagonal_lines == 0 and num_contours <= 2:
+        return 1
+    
+    # Additional check for diagonal lines (digits 2 and 6)
+    if diagonal_lines >= 1 and horizontal_lines == 0:
+        # Determine 2 vs 6 based on angle of the diagonal
+        # (This is a simplification, in reality would need better angle calculation)
+        return 2 if ('top-right' in str(quadrant_coords) or 'bottom-left' in str(quadrant_coords)) else 6
+    
+    # Default fallback: if we detect any significant contours but can't identify
+    # a specific digit, choose based on the fill ratio
+    if num_contours > 0 and fill_ratio > 0.1:
+        if fill_ratio > 0.3:
+            return 5  # Most filled shape
+        elif diagonal_lines >= 1:
+            return 8  # Has diagonal components
+        else:
+            return 1  # Default to simplest digit
+    
+    # Nothing meaningful detected
     return 0
 
 def recognize_cistercian_numeral(image):
@@ -246,6 +293,9 @@ def recognize_cistercian_numeral(image):
         # Preprocess the image
         binary_image = preprocess_image(image)
         
+        # Save a debug copy of the preprocessed image
+        # cv2.imwrite('/tmp/preprocessed.png', binary_image)
+        
         # Find the stem and quadrants
         structure = find_stem_and_quadrants(binary_image)
         if not structure:
@@ -254,19 +304,25 @@ def recognize_cistercian_numeral(image):
         
         # Extract digits from each quadrant
         quadrants = structure['quadrants']
-        digits = {
-            'units': detect_features_in_quadrant(binary_image, quadrants['bottom-right']),
-            'tens': detect_features_in_quadrant(binary_image, quadrants['top-right']),
-            'hundreds': detect_features_in_quadrant(binary_image, quadrants['bottom-left']),
-            'thousands': detect_features_in_quadrant(binary_image, quadrants['top-left'])
-        }
+        
+        # Debug: Check quadrant coordinates
+        logger.debug(f"Quadrant coordinates: {quadrants}")
+        
+        # Extract digits properly from each quadrant
+        units_digit = detect_features_in_quadrant(binary_image, quadrants['bottom-right'])
+        tens_digit = detect_features_in_quadrant(binary_image, quadrants['top-right'])
+        hundreds_digit = detect_features_in_quadrant(binary_image, quadrants['bottom-left'])
+        thousands_digit = detect_features_in_quadrant(binary_image, quadrants['top-left'])
+        
+        # Debug: Log detected digits
+        logger.debug(f"Detected digits: units={units_digit}, tens={tens_digit}, hundreds={hundreds_digit}, thousands={thousands_digit}")
         
         # Combine digits to form the number
         number = (
-            digits['thousands'] * 1000 +
-            digits['hundreds'] * 100 +
-            digits['tens'] * 10 +
-            digits['units']
+            thousands_digit * 1000 +
+            hundreds_digit * 100 +
+            tens_digit * 10 +
+            units_digit
         )
         
         return number

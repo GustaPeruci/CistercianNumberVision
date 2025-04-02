@@ -54,24 +54,28 @@ def draw_cistercian_symbol(img, number):
     # Draw the vertical stem
     cv2.line(img, (center_x, stem_top), (center_x, stem_bottom), 0, line_thickness)
     
-    # Extract digits
-    digits = [0, 0, 0, 0]  # initialize with zeros [units, tens, hundreds, thousands]
-    temp = number
-    for i in range(4):
-        digits[i] = temp % 10
-        temp //= 10
+    # Extract digits - we need to handle each place value correctly
+    # The number 1234 should have:
+    # units (4) in bottom right
+    # tens (3) in top right
+    # hundreds (2) in bottom left
+    # thousands (1) in top left
+    units = number % 10
+    tens = (number // 10) % 10
+    hundreds = (number // 100) % 10
+    thousands = (number // 1000) % 10
     
     # Draw units (bottom right)
-    draw_digit(img, digits[0], center_x, stem_bottom, 'bottom-right', line_thickness)
+    draw_digit(img, units, center_x, stem_bottom, 'bottom-right', line_thickness)
     
     # Draw tens (top right)
-    draw_digit(img, digits[1], center_x, stem_top, 'top-right', line_thickness)
+    draw_digit(img, tens, center_x, stem_top, 'top-right', line_thickness)
     
     # Draw hundreds (bottom left)
-    draw_digit(img, digits[2], center_x, stem_bottom, 'bottom-left', line_thickness)
+    draw_digit(img, hundreds, center_x, stem_bottom, 'bottom-left', line_thickness)
     
     # Draw thousands (top left)
-    draw_digit(img, digits[3], center_x, stem_top, 'top-left', line_thickness)
+    draw_digit(img, thousands, center_x, stem_top, 'top-left', line_thickness)
     
     return img
 
