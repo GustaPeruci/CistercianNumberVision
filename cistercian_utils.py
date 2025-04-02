@@ -46,13 +46,13 @@ def draw_cistercian_symbol(img, number):
     height, width = img.shape
     center_x = width // 2
     center_y = height // 2
-    stem_height = height // 1.5
-    stem_top = center_y - stem_height // 2
-    stem_bottom = center_y + stem_height // 2
+    stem_height = int(height // 1.5)  # Ensure integer values
+    stem_top = int(center_y - stem_height // 2)
+    stem_bottom = int(center_y + stem_height // 2)
     line_thickness = 3
     
     # Draw the vertical stem
-    cv2.line(img, (center_x, int(stem_top)), (center_x, int(stem_bottom)), 0, line_thickness)
+    cv2.line(img, (center_x, stem_top), (center_x, stem_bottom), 0, line_thickness)
     
     # Extract digits
     digits = [0, 0, 0, 0]  # initialize with zeros [units, tens, hundreds, thousands]
@@ -83,6 +83,10 @@ def draw_digit(img, digit, center_x, y_pos, quadrant, thickness):
     if digit == 0:
         return  # No symbol for 0
     
+    # Ensure coordinates are integers
+    center_x = int(center_x)
+    y_pos = int(y_pos)
+    
     # Determine direction based on quadrant
     x_dir = 1 if 'right' in quadrant else -1
     y_dir = 1 if 'bottom' in quadrant else -1
@@ -93,62 +97,69 @@ def draw_digit(img, digit, center_x, y_pos, quadrant, thickness):
     # Draw the digit symbol based on its value
     if digit == 1:
         # Horizontal line from stem
-        cv2.line(img, (center_x, y_pos), (center_x + x_dir * symbol_size, y_pos), 0, thickness)
+        end_x = int(center_x + x_dir * symbol_size)
+        cv2.line(img, (center_x, y_pos), (end_x, y_pos), 0, thickness)
     
     elif digit == 2:
         # Diagonal line from stem (up)
-        end_x = center_x + x_dir * symbol_size
-        end_y = y_pos - symbol_size
+        end_x = int(center_x + x_dir * symbol_size)
+        end_y = int(y_pos - symbol_size)
         cv2.line(img, (center_x, y_pos), (end_x, end_y), 0, thickness)
     
     elif digit == 3:
         # Diagonal line from stem (up) with horizontal line
-        end_x = center_x + x_dir * symbol_size
-        end_y = y_pos - symbol_size
+        end_x = int(center_x + x_dir * symbol_size)
+        end_y = int(y_pos - symbol_size)
         cv2.line(img, (center_x, y_pos), (end_x, end_y), 0, thickness)
-        cv2.line(img, (center_x, y_pos), (center_x + x_dir * symbol_size, y_pos), 0, thickness)
+        horiz_end_x = int(center_x + x_dir * symbol_size)
+        cv2.line(img, (center_x, y_pos), (horiz_end_x, y_pos), 0, thickness)
     
     elif digit == 4:
         # Horizontal line with vertical extension down
-        cv2.line(img, (center_x, y_pos), (center_x + x_dir * symbol_size, y_pos), 0, thickness)
-        cv2.line(img, (center_x + x_dir * symbol_size, y_pos), 
-                 (center_x + x_dir * symbol_size, y_pos + symbol_size), 0, thickness)
+        horiz_end_x = int(center_x + x_dir * symbol_size)
+        cv2.line(img, (center_x, y_pos), (horiz_end_x, y_pos), 0, thickness)
+        vert_end_y = int(y_pos + symbol_size)
+        cv2.line(img, (horiz_end_x, y_pos), (horiz_end_x, vert_end_y), 0, thickness)
     
     elif digit == 5:
         # Symbol for 5 (combination of 1 and 4)
-        cv2.line(img, (center_x, y_pos), (center_x + x_dir * symbol_size, y_pos), 0, thickness)
-        cv2.line(img, (center_x + x_dir * symbol_size, y_pos), 
-                 (center_x + x_dir * symbol_size, y_pos + symbol_size), 0, thickness)
-        cv2.line(img, (center_x + x_dir * symbol_size, y_pos + symbol_size), 
-                 (center_x, y_pos + symbol_size), 0, thickness)
+        horiz_end_x = int(center_x + x_dir * symbol_size)
+        cv2.line(img, (center_x, y_pos), (horiz_end_x, y_pos), 0, thickness)
+        vert_end_y = int(y_pos + symbol_size)
+        cv2.line(img, (horiz_end_x, y_pos), (horiz_end_x, vert_end_y), 0, thickness)
+        cv2.line(img, (horiz_end_x, vert_end_y), (center_x, vert_end_y), 0, thickness)
     
     elif digit == 6:
         # Diagonal line from stem (down)
-        end_x = center_x + x_dir * symbol_size
-        end_y = y_pos + symbol_size
+        end_x = int(center_x + x_dir * symbol_size)
+        end_y = int(y_pos + symbol_size)
         cv2.line(img, (center_x, y_pos), (end_x, end_y), 0, thickness)
     
     elif digit == 7:
         # Diagonal line from stem (down) with horizontal line
-        end_x = center_x + x_dir * symbol_size
-        end_y = y_pos + symbol_size
+        end_x = int(center_x + x_dir * symbol_size)
+        end_y = int(y_pos + symbol_size)
         cv2.line(img, (center_x, y_pos), (end_x, end_y), 0, thickness)
-        cv2.line(img, (center_x, y_pos), (center_x + x_dir * symbol_size, y_pos), 0, thickness)
+        horiz_end_x = int(center_x + x_dir * symbol_size)
+        cv2.line(img, (center_x, y_pos), (horiz_end_x, y_pos), 0, thickness)
     
     elif digit == 8:
         # V shape
-        mid_x = center_x + x_dir * (symbol_size // 2)
-        end_x = center_x + x_dir * symbol_size
-        cv2.line(img, (center_x, y_pos), (mid_x, y_pos + symbol_size), 0, thickness)
-        cv2.line(img, (mid_x, y_pos + symbol_size), (end_x, y_pos), 0, thickness)
+        mid_x = int(center_x + x_dir * (symbol_size // 2))
+        end_x = int(center_x + x_dir * symbol_size)
+        mid_y = int(y_pos + symbol_size)
+        cv2.line(img, (center_x, y_pos), (mid_x, mid_y), 0, thickness)
+        cv2.line(img, (mid_x, mid_y), (end_x, y_pos), 0, thickness)
     
     elif digit == 9:
         # Circle or square (using a small rectangle for simplicity)
-        top_left = (center_x, y_pos - symbol_size // 2)
-        bottom_right = (center_x + x_dir * symbol_size, y_pos + symbol_size // 2)
-        if x_dir < 0:  # Adjust for left quadrants
-            top_left = (center_x + x_dir * symbol_size, y_pos - symbol_size // 2)
-            bottom_right = (center_x, y_pos + symbol_size // 2)
+        half_size = int(symbol_size // 2)
+        if x_dir > 0:
+            top_left = (center_x, int(y_pos - half_size))
+            bottom_right = (int(center_x + x_dir * symbol_size), int(y_pos + half_size))
+        else:
+            top_left = (int(center_x + x_dir * symbol_size), int(y_pos - half_size))
+            bottom_right = (center_x, int(y_pos + half_size))
         cv2.rectangle(img, top_left, bottom_right, 0, thickness)
 
 def number_to_cistercian_image(number):
