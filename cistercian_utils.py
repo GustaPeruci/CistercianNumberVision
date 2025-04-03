@@ -106,12 +106,13 @@ def draw_digit(img, digit, center_x, y_pos, quadrant, thickness):
         cv2.line(img, (center_x, y_pos), (end_x, y_pos), 0, thickness)
     
     elif digit == 2:
-        # 2: Horizontal line from stem with a short vertical line up
+        # 2: Horizontal line with vertical at end (⊢)
+        # Creating exact symbol from reference image
         horiz_end_x = int(center_x + x_dir * symbol_size)
         cv2.line(img, (center_x, y_pos), (horiz_end_x, y_pos), 0, thickness)
         
-        # Add vertical line at the end
-        vert_end_y = int(y_pos - y_dir * symbol_size // 2)  # Half height for this symbol
+        # The full-height vertical line at the end
+        vert_end_y = int(y_pos - y_dir * symbol_size)
         cv2.line(img, (horiz_end_x, y_pos), (horiz_end_x, vert_end_y), 0, thickness)
     
     elif digit == 3:
@@ -121,22 +122,24 @@ def draw_digit(img, digit, center_x, y_pos, quadrant, thickness):
         cv2.line(img, (center_x, y_pos), (end_x, end_y), 0, thickness)
     
     elif digit == 4:
-        # 4: Diagonal line with horizontal line
-        # Diagonal
+        # 4: Diagonal line with vertical at end (like Z)
+        # Diagonal line
         end_x = int(center_x + x_dir * symbol_size)
         end_y = int(y_pos - y_dir * symbol_size)
         cv2.line(img, (center_x, y_pos), (end_x, end_y), 0, thickness)
         
-        # Horizontal
-        cv2.line(img, (center_x, y_pos), (end_x, y_pos), 0, thickness)
+        # Vertical line at end of diagonal
+        cv2.line(img, (end_x, end_y), (end_x, y_pos), 0, thickness)
     
     elif digit == 5:
-        # 5: Horizontal and vertical lines forming corner
-        horiz_end_x = int(center_x + x_dir * symbol_size)
-        cv2.line(img, (center_x, y_pos), (horiz_end_x, y_pos), 0, thickness)
+        # 5: Diagonal with horizontal at end (like \_)
+        # Diagonal line
+        end_x = int(center_x + x_dir * symbol_size)
+        end_y = int(y_pos - y_dir * symbol_size)
+        cv2.line(img, (center_x, y_pos), (end_x, end_y), 0, thickness)
         
-        vert_end_y = int(y_pos - y_dir * symbol_size)
-        cv2.line(img, (horiz_end_x, y_pos), (horiz_end_x, vert_end_y), 0, thickness)
+        # Horizontal line at end
+        cv2.line(img, (end_x, end_y), (center_x, end_y), 0, thickness)
     
     elif digit == 6:
         # 6: Vertical line along the stem
@@ -152,13 +155,14 @@ def draw_digit(img, digit, center_x, y_pos, quadrant, thickness):
         cv2.line(img, (center_x, vert_end_y), (horiz_end_x, vert_end_y), 0, thickness)
     
     elif digit == 8:
-        # 8: Horizontal with vertical
+        # 8: ⊣ shape (horizontal with vertical at the end)
+        # Horizontal line
         horiz_end_x = int(center_x + x_dir * symbol_size)
         cv2.line(img, (center_x, y_pos), (horiz_end_x, y_pos), 0, thickness)
         
+        # Vertical line at the end
         vert_end_y = int(y_pos - y_dir * symbol_size)
-        mid_x = int(center_x + x_dir * symbol_size // 2)  # Middle point
-        cv2.line(img, (mid_x, y_pos), (mid_x, vert_end_y), 0, thickness)
+        cv2.line(img, (horiz_end_x, y_pos), (horiz_end_x, vert_end_y), 0, thickness)
     
     elif digit == 9:
         # 9: Square/rectangle shape
