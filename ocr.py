@@ -250,51 +250,50 @@ def detect_features_in_quadrant(binary_image, quadrant_coords):
         return 0
     
     # SIMPLIFIED LOGIC FOR MORE RELIABLE DETECTION
+    # Based on the reference image of Cistercian numerals
     
-    # Digit 1: Simple horizontal line - most common and distinctive
-    if horizontal_lines >= 1 and vertical_lines == 0 and diagonal_lines == 0:
+    # Digit 1: Simple horizontal line from stem
+    if horizontal_lines >= 1 and vertical_lines == 0 and diagonal_lines == 0 and num_contours <= 2:
         logger.debug(f"Detected digit 1 in {quadrant_name}")
         return 1
     
-    # Diagonal lines detection - for digits 2 and 6
-    # Let's try a simpler approach first by just checking for diagonal lines
+    # Digit 2: Horizontal line with short vertical at end
+    if horizontal_lines >= 1 and vertical_lines >= 1 and fill_ratio < 0.2:
+        logger.debug(f"Detected digit 2 in {quadrant_name}")
+        return 2
+    
+    # Digit 3: Diagonal line from stem
     if diagonal_lines >= 1 and horizontal_lines == 0 and vertical_lines == 0:
-        # Digit 2: Diagonal from stem going up-right or up-left depending on quadrant
-        # Digit 6: Diagonal from stem going down-right or down-left depending on quadrant
-        # In simplest implementation:
-        if quadrant_name in ["top-right", "bottom-left"]:
-            logger.debug(f"Detected digit 2 in {quadrant_name}")
-            return 2
-        else:
-            logger.debug(f"Detected digit 6 in {quadrant_name}")
-            return 6
+        logger.debug(f"Detected digit 3 in {quadrant_name}")
+        return 3
     
-    # Digit 3 and 7: Horizontal line with diagonal
-    if horizontal_lines >= 1 and diagonal_lines >= 1:
-        if quadrant_name in ["top-right", "bottom-left"]:
-            logger.debug(f"Detected digit 3 in {quadrant_name}")
-            return 3
-        else:
-            logger.debug(f"Detected digit 7 in {quadrant_name}")
-            return 7
-    
-    # Digit 4: L-shape (horizontal and vertical lines)
-    if horizontal_lines >= 1 and vertical_lines >= 1:
+    # Digit 4: Diagonal line with horizontal
+    if diagonal_lines >= 1 and horizontal_lines >= 1:
         logger.debug(f"Detected digit 4 in {quadrant_name}")
         return 4
     
-    # Digit 5: Higher complexity or fill ratio
-    if rectangles >= 1 or fill_ratio > 0.3 or num_contours >= 3:
+    # Digit 5: Horizontal and vertical lines forming corner (L shape)
+    if horizontal_lines >= 1 and vertical_lines >= 1 and fill_ratio > 0.15:
         logger.debug(f"Detected digit 5 in {quadrant_name}")
         return 5
     
-    # Digit 8: V-shape or multiple diagonal lines
-    if diagonal_lines >= 2:
+    # Digit 6: Vertical line along stem
+    if vertical_lines >= 1 and horizontal_lines == 0 and diagonal_lines == 0:
+        logger.debug(f"Detected digit 6 in {quadrant_name}")
+        return 6
+    
+    # Digit 7: Vertical line with horizontal at end (⊥ shape)
+    if vertical_lines >= 1 and horizontal_lines >= 1 and num_contours <= 3:
+        logger.debug(f"Detected digit 7 in {quadrant_name}")
+        return 7
+    
+    # Digit 8: Horizontal with vertical in middle (⊢ shape)
+    if horizontal_lines >= 1 and vertical_lines >= 1 and num_contours >= 2:
         logger.debug(f"Detected digit 8 in {quadrant_name}")
         return 8
     
-    # Digit 9: Square/rectangle shape or high area coverage
-    if rectangles >= 1 or fill_ratio > 0.25:
+    # Digit 9: Rectangle/square shape
+    if rectangles >= 1 or (fill_ratio > 0.25 and num_contours >= 3):
         logger.debug(f"Detected digit 9 in {quadrant_name}")
         return 9
     
@@ -350,12 +349,12 @@ def recognize_cistercian_numeral(image):
         
         # Extract digits properly from each quadrant according to Cistercian rules
         # Units (1-9): TOP RIGHT quadrant
-        # Tens (10-90): BOTTOM RIGHT quadrant
-        # Hundreds (100-900): TOP LEFT quadrant
+        # Tens (10-90): TOP LEFT quadrant
+        # Hundreds (100-900): BOTTOM RIGHT quadrant
         # Thousands (1000-9000): BOTTOM LEFT quadrant
         units_digit = detect_features_in_quadrant(binary_image, quadrants['top-right'])
-        tens_digit = detect_features_in_quadrant(binary_image, quadrants['bottom-right'])
-        hundreds_digit = detect_features_in_quadrant(binary_image, quadrants['top-left'])
+        tens_digit = detect_features_in_quadrant(binary_image, quadrants['top-left'])
+        hundreds_digit = detect_features_in_quadrant(binary_image, quadrants['bottom-right'])
         thousands_digit = detect_features_in_quadrant(binary_image, quadrants['bottom-left'])
         
         # Debug: Log detected digits
