@@ -11,7 +11,7 @@ def preprocess_image(image):
     Preprocess the image for better feature extraction.
     
     Args:
-        image: Grayscale input image
+        image: Input image (color or grayscale)
         
     Returns:
         Preprocessed binary image
@@ -21,23 +21,48 @@ def preprocess_image(image):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     
     # Resize image to ensure consistent processing
+    # The dimensions should match what we use for drawing (300x400)
     image = cv2.resize(image, (300, 400))
     
-    # Apply Gaussian blur to reduce noise
-    blurred = cv2.GaussianBlur(image, (5, 5), 0)
+    # Log the image size after resizing
+    logger.debug(f"Resized image shape: {image.shape}")
     
-    # Apply adaptive thresholding to get binary image
-    binary = cv2.adaptiveThreshold(
+    # Normalize the image to improve contrast
+    # For images from canvas, they might be faint, so normalize helps
+    normalized = cv2.normalize(image, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX)
+    
+    # Apply Gaussian blur to reduce noise
+    blurred = cv2.GaussianBlur(normalized, (5, 5), 0)
+    
+    # Use Otsu's thresholding to automatically determine the threshold value
+    # This works better for hand-drawn images with varying intensity
+    _, binary_otsu = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    
+    # Also try adaptive thresholding which works better for scanned/printed symbols
+    binary_adaptive = cv2.adaptiveThreshold(
         blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
         cv2.THRESH_BINARY_INV, 11, 2
     )
     
-    # Noise removal
+    # Combine the two thresholding methods - take the more prominent result
+    binary = cv2.bitwise_or(binary_otsu, binary_adaptive)
+    
+    # Noise removal and cleanup
     kernel = np.ones((3, 3), np.uint8)
+    
+    # MORPH_OPEN: removes small noise outside the main foreground objects
     binary = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel, iterations=1)
     
-    # Further clean up with closing operation
+    # MORPH_CLOSE: fills small holes inside foreground objects
     binary = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel, iterations=2)
+    
+    # Dilate slightly to ensure lines are connected
+    binary = cv2.dilate(binary, kernel, iterations=1)
+    
+    # Log the number of non-zero pixels to check if the image has content
+    non_zero = np.count_nonzero(binary)
+    total_pixels = binary.shape[0] * binary.shape[1]
+    logger.debug(f"Binary image has {non_zero} non-zero pixels out of {total_pixels} ({non_zero/total_pixels:.2%})")
     
     return binary
 
@@ -206,77 +231,92 @@ def detect_features_in_quadrant(binary_image, quadrant_coords):
     # Debug: Log the quadrant features
     logger.debug(f"Quadrant features: horiz={horizontal_lines}, vert={vertical_lines}, diag={diagonal_lines}, rect={rectangles}, contours={num_contours}, fill_ratio={fill_ratio:.2f}")
     
-    # Digit 1: Simple horizontal line
-    if horizontal_lines >= 1 and vertical_lines == 0 and diagonal_lines == 0 and num_contours <= 2:
+    # Add more info about the quadrant 
+    quadrant_name = "unknown"
+    if "top-left" in str(quadrant_coords):
+        quadrant_name = "top-left"
+    elif "top-right" in str(quadrant_coords):
+        quadrant_name = "top-right"
+    elif "bottom-left" in str(quadrant_coords):
+        quadrant_name = "bottom-left"
+    elif "bottom-right" in str(quadrant_coords):
+        quadrant_name = "bottom-right"
+    
+    logger.debug(f"Processing quadrant: {quadrant_name}")
+    
+    # Very simple check: if the quadrant is mostly empty, return 0
+    if fill_ratio < 0.02 or num_contours == 0:
+        logger.debug(f"Quadrant {quadrant_name} is mostly empty, returning 0")
+        return 0
+    
+    # SIMPLIFIED LOGIC FOR MORE RELIABLE DETECTION
+    
+    # Digit 1: Simple horizontal line - most common and distinctive
+    if horizontal_lines >= 1 and vertical_lines == 0 and diagonal_lines == 0:
+        logger.debug(f"Detected digit 1 in {quadrant_name}")
         return 1
     
-    # Digit 2: Simple diagonal line (going up)
-    if diagonal_lines == 1 and horizontal_lines == 0 and vertical_lines == 0:
-        # For quadrants "top-right" and "bottom-left"
-        if ('top-right' in str(quadrant_coords) or 'bottom-left' in str(quadrant_coords)):
+    # Diagonal lines detection - for digits 2 and 6
+    # Let's try a simpler approach first by just checking for diagonal lines
+    if diagonal_lines >= 1 and horizontal_lines == 0 and vertical_lines == 0:
+        # Digit 2: Diagonal from stem going up-right or up-left depending on quadrant
+        # Digit 6: Diagonal from stem going down-right or down-left depending on quadrant
+        # In simplest implementation:
+        if quadrant_name in ["top-right", "bottom-left"]:
+            logger.debug(f"Detected digit 2 in {quadrant_name}")
             return 2
-        # For other quadrants, this is more likely to be digit 6
+        else:
+            logger.debug(f"Detected digit 6 in {quadrant_name}")
+            return 6
     
-    # Digit 3: Combination of horizontal and diagonal lines (going up)
-    if horizontal_lines >= 1 and diagonal_lines == 1 and num_contours <= 3:
-        # For quadrants "top-right" and "bottom-left"
-        if ('top-right' in str(quadrant_coords) or 'bottom-left' in str(quadrant_coords)):
+    # Digit 3 and 7: Horizontal line with diagonal
+    if horizontal_lines >= 1 and diagonal_lines >= 1:
+        if quadrant_name in ["top-right", "bottom-left"]:
+            logger.debug(f"Detected digit 3 in {quadrant_name}")
             return 3
-        # For other quadrants, this is more likely to be digit 7
+        else:
+            logger.debug(f"Detected digit 7 in {quadrant_name}")
+            return 7
     
     # Digit 4: L-shape (horizontal and vertical lines)
-    if horizontal_lines >= 1 and vertical_lines >= 1 and diagonal_lines == 0:
+    if horizontal_lines >= 1 and vertical_lines >= 1:
+        logger.debug(f"Detected digit 4 in {quadrant_name}")
         return 4
     
-    # Digit 5: Presence of a rectangle or high fill ratio (complex shape)
-    if (rectangles >= 1 and fill_ratio > 0.25) or fill_ratio > 0.35:
+    # Digit 5: Higher complexity or fill ratio
+    if rectangles >= 1 or fill_ratio > 0.3 or num_contours >= 3:
+        logger.debug(f"Detected digit 5 in {quadrant_name}")
         return 5
     
-    # Digit 6: Simple diagonal line (going down)
-    if diagonal_lines == 1 and horizontal_lines == 0 and vertical_lines == 0:
-        # For quadrants "top-left" and "bottom-right"
-        if ('top-left' in str(quadrant_coords) or 'bottom-right' in str(quadrant_coords)):
-            return 6
-        # For other quadrants, this is more likely to be digit 2
-    
-    # Digit 7: Combination of horizontal and diagonal lines (going down)
-    if horizontal_lines >= 1 and diagonal_lines >= 1 and num_contours <= 3:
-        # For quadrants "top-left" and "bottom-right"
-        if ('top-left' in str(quadrant_coords) or 'bottom-right' in str(quadrant_coords)):
-            return 7
-        # For other quadrants, this is more likely to be digit 3
-    
-    # Digit 8: V-shape (two diagonal lines)
-    if diagonal_lines >= 2 or (num_contours == 1 and len(contours[0]) >= 6):
+    # Digit 8: V-shape or multiple diagonal lines
+    if diagonal_lines >= 2:
+        logger.debug(f"Detected digit 8 in {quadrant_name}")
         return 8
     
-    # Digit 9: Rectangular or square shape with high area coverage
-    if (rectangles >= 1) or (num_contours == 1 and cv2.contourArea(contours[0]) > 0.25 * quadrant_area):
+    # Digit 9: Square/rectangle shape or high area coverage
+    if rectangles >= 1 or fill_ratio > 0.25:
+        logger.debug(f"Detected digit 9 in {quadrant_name}")
         return 9
     
-    # Secondary checks for harder-to-distinguish digits
+    # If we detect any significant contours but couldn't identify a digit,
+    # determine the most likely digit based on simplified rules
+    if vertical_lines >= 1:
+        return 1  # Vertical lines might be misdetected horizontals
+    elif diagonal_lines >= 1:
+        return 2  # Default to simplest diagonal digit
+    elif horizontal_lines >= 1:
+        return 1  # Default to simplest digit
+    elif fill_ratio > 0.1:
+        return 5  # Default to filled shape
     
-    # Additional check for digit 1 (simple horizontal line with less strict conditions)
-    if horizontal_lines >= 1 and diagonal_lines == 0 and num_contours <= 2:
+    # Fall back to basic rule - if there's anything in the quadrant
+    # but we couldn't classify it, return 1 as the safest guess
+    if np.sum(quadrant_img) > 0:
+        logger.debug(f"Fallback: Detected digit 1 in {quadrant_name}")
         return 1
     
-    # Additional check for diagonal lines (digits 2 and 6)
-    if diagonal_lines >= 1 and horizontal_lines == 0:
-        # Determine 2 vs 6 based on angle of the diagonal
-        # (This is a simplification, in reality would need better angle calculation)
-        return 2 if ('top-right' in str(quadrant_coords) or 'bottom-left' in str(quadrant_coords)) else 6
-    
-    # Default fallback: if we detect any significant contours but can't identify
-    # a specific digit, choose based on the fill ratio
-    if num_contours > 0 and fill_ratio > 0.1:
-        if fill_ratio > 0.3:
-            return 5  # Most filled shape
-        elif diagonal_lines >= 1:
-            return 8  # Has diagonal components
-        else:
-            return 1  # Default to simplest digit
-    
     # Nothing meaningful detected
+    logger.debug(f"No digit detected in {quadrant_name}")
     return 0
 
 def recognize_cistercian_numeral(image):
@@ -309,6 +349,11 @@ def recognize_cistercian_numeral(image):
         logger.debug(f"Quadrant coordinates: {quadrants}")
         
         # Extract digits properly from each quadrant
+        # The quadrant placement must match exactly how we draw them in cistercian_utils.py
+        # Units = bottom right
+        # Tens = top right
+        # Hundreds = bottom left
+        # Thousands = top left
         units_digit = detect_features_in_quadrant(binary_image, quadrants['bottom-right'])
         tens_digit = detect_features_in_quadrant(binary_image, quadrants['top-right'])
         hundreds_digit = detect_features_in_quadrant(binary_image, quadrants['bottom-left'])
