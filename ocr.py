@@ -348,16 +348,15 @@ def recognize_cistercian_numeral(image):
         # Debug: Check quadrant coordinates
         logger.debug(f"Quadrant coordinates: {quadrants}")
         
-        # Extract digits properly from each quadrant
-        # The quadrant placement must match exactly how we draw them in cistercian_utils.py
-        # Units = bottom right
-        # Tens = top right
-        # Hundreds = bottom left
-        # Thousands = top left
-        units_digit = detect_features_in_quadrant(binary_image, quadrants['bottom-right'])
-        tens_digit = detect_features_in_quadrant(binary_image, quadrants['top-right'])
-        hundreds_digit = detect_features_in_quadrant(binary_image, quadrants['bottom-left'])
-        thousands_digit = detect_features_in_quadrant(binary_image, quadrants['top-left'])
+        # Extract digits properly from each quadrant according to Cistercian rules
+        # Units (1-9): TOP RIGHT quadrant
+        # Tens (10-90): BOTTOM RIGHT quadrant
+        # Hundreds (100-900): TOP LEFT quadrant
+        # Thousands (1000-9000): BOTTOM LEFT quadrant
+        units_digit = detect_features_in_quadrant(binary_image, quadrants['top-right'])
+        tens_digit = detect_features_in_quadrant(binary_image, quadrants['bottom-right'])
+        hundreds_digit = detect_features_in_quadrant(binary_image, quadrants['top-left'])
+        thousands_digit = detect_features_in_quadrant(binary_image, quadrants['bottom-left'])
         
         # Debug: Log detected digits
         logger.debug(f"Detected digits: units={units_digit}, tens={tens_digit}, hundreds={hundreds_digit}, thousands={thousands_digit}")
