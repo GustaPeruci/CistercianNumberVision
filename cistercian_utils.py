@@ -185,3 +185,21 @@ def number_to_cistercian_image(number):
     
     # Return base64 encoded image
     return encode_image_to_base64(img)
+
+def generate_all_cistercian_templates():
+    output_dir = 'created_numbers'
+    os.makedirs(output_dir, exist_ok=True)
+    
+    for number in range(1, 10000):
+        img = create_blank_image(300, 400)
+        img = draw_cistercian_symbol(img, number)
+        filename = f'{output_dir}/cistercian_{number}.png'
+        cv2.imwrite(filename, img)
+        if number % 100 == 0:
+            print(f'{number} imagens geradas...')
+    
+    print("✅ Todas as 9999 imagens foram geradas com sucesso na pasta 'created_numbers/'")
+
+# generate_all_cistercian_templates()
+
+

@@ -24,62 +24,14 @@
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                     aria-controls="navbarNav" aria-expanded="false" aria-label="Alternar navegação">
                 <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#about-cistercian" data-bs-toggle="modal" data-bs-target="#aboutModal">
-                            <i class="fas fa-info-circle me-1"></i> Sobre os Algarismos Cistercienses
-                        </a>
-                    </li>
-                </ul>
-            </div>
+            </button>            
         </div>
     </nav>
 
     <div class="container mt-4">
         {% block content %}{% endblock %}
     </div>
-    
-    <!-- Modal Sobre Algarismos Cistercienses -->
-    <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="aboutModalLabel">Sobre os Algarismos Cistercienses</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Os algarismos cistercienses, também chamados de numerais monásticos, foram desenvolvidos por monges cistercienses no início do século XIII. Este sistema numérico é notável por sua capacidade de codificar números de 1 a 9999 em um único símbolo.</p>
-                    
-                    <h5>Como Funcionam os Algarismos Cistercienses:</h5>
-                    <p>O sistema utiliza um traço vertical com diferentes marcas em quatro quadrantes:</p>
-                    <ul>
-                        <li><strong>Inferior Direito:</strong> Unidades (1–9)</li>
-                        <li><strong>Superior Direito:</strong> Dezenas (10–90)</li>
-                        <li><strong>Inferior Esquerdo:</strong> Centenas (100–900)</li>
-                        <li><strong>Superior Esquerdo:</strong> Milhares (1000–9000)</li>
-                    </ul>
-                    
-                    <p>Cada dígito de 1 a 9 possui um símbolo único que é colocado no quadrante apropriado para representar seu valor posicional.</p>
-                    
-                    <h5>Exemplos:</h5>
-                    <ul>
-                        <li>1: Uma linha horizontal saindo do traço para a direita na parte inferior</li>
-                        <li>10: Uma linha horizontal saindo do traço para a direita na parte superior</li>
-                        <li>100: Uma linha horizontal saindo do traço para a esquerda na parte inferior</li>
-                        <li>1000: Uma linha horizontal saindo do traço para a esquerda na parte superior</li>
-                    </ul>
-                    
-                    <p>Este aplicativo permite converter entre números arábicos e suas representações cistercienses, assim como reconhecer símbolos cistercienses por meio de tecnologia de visão computacional.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
+        
     <footer class="bg-dark text-center text-white-50 py-3 mt-5">
         <div class="container">
             <p>Conversor de Algarismos Cistercienses | Projeto de Visão Computacional</p>

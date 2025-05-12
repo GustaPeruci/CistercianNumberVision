@@ -8,7 +8,7 @@ import io
 import base64
 
 from cistercian_utils import number_to_cistercian_image, decode_base64_image
-from ocr import recognize_cistercian_numeral
+from ocr import recognize_cistercian_numeral, load_templates
 
 # Create Flask app
 app = Flask(__name__)
@@ -55,35 +55,33 @@ def convert_to_cistercian():
 @app.route('/recognize-cistercian', methods=['POST'])
 def recognize_cistercian():
     try:
-        # Check if the post request has the file part
         if 'file' not in request.files and 'imageData' not in request.form:
             return jsonify({'error': 'No file or image data provided'}), 400
-        
+
         image = None
-        
+
         if 'file' in request.files:
             file = request.files['file']
             if file.filename == '':
                 return jsonify({'error': 'No file selected'}), 400
-            
+
             if file and allowed_file(file.filename):
-                # Read the file
                 in_memory_file = io.BytesIO()
                 file.save(in_memory_file)
                 data = np.frombuffer(in_memory_file.getvalue(), dtype=np.uint8)
                 image = cv2.imdecode(data, cv2.IMREAD_GRAYSCALE)
-        
+
         elif 'imageData' in request.form:
-            # Handle base64 image data
             image_data = request.form['imageData']
             image = decode_base64_image(image_data)
-        
+
         if image is None:
             return jsonify({'error': 'Could not process the image'}), 400
-        
-        # Recognize the Cistercian numeral
-        number = recognize_cistercian_numeral(image)
-        
+
+        templates, hashes = load_templates("created_numbers")
+        number = recognize_cistercian_numeral(image, hashes=hashes)
+
+
         return jsonify({'number': number})
     except Exception as e:
         logger.error(f"Error recognizing Cistercian: {str(e)}")
