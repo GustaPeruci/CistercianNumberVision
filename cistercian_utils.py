@@ -2,12 +2,9 @@ import cv2
 import numpy as np
 import base64
 from PIL import Image
-import io
-import math
+import os
 
 def decode_base64_image(base64_str):
-    """Decode a base64 image string to a numpy array."""
-    # Remove header if present
     if ',' in base64_str:
         base64_str = base64_str.split(',')[1]
     
@@ -19,6 +16,8 @@ def decode_base64_image(base64_str):
     
     # Decode to image
     img = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
+    
+    # print(f"Decoded image shape: {img.shape}")
     return img
 
 def encode_image_to_base64(img):
@@ -106,8 +105,37 @@ def draw_digit(img, digit, center_x, y_pos, quadrant, thickness):
         cv2.line(img, (center_x, y_pos), (end_x, y_pos), 0, thickness)
     
     elif digit == 2:
-        # 2: Horizontal line with vertical at end (⊢)
-        # Creating exact symbol from reference image
+        horiz_end_x = int(center_x + x_dir * symbol_size)
+        vert_end_y = int(y_pos - y_dir * symbol_size)
+        
+        cv2.line(img, (center_x, vert_end_y), (horiz_end_x, vert_end_y), 0, thickness)   
+    
+    elif digit == 3:        
+        end_x = int(center_x + x_dir * symbol_size)
+        end_y = int(y_pos - y_dir * symbol_size)
+        cv2.line(img, (center_x, y_pos), (end_x, end_y), 0, thickness)
+    
+    elif digit == 4:
+        end_x = int(center_x + x_dir * symbol_size)
+        end_y = int(y_pos - y_dir * symbol_size)
+        cv2.line(img, (center_x, end_y), (end_x, y_pos), 0, thickness)
+    
+    elif digit == 5:
+        # 5: Diagonal with horizontal at end (like \_)
+        # Diagonal line
+        end_x = int(center_x + x_dir * symbol_size)
+        end_y = int(y_pos - y_dir * symbol_size)
+        cv2.line(img, (center_x, end_y), (end_x, y_pos), 0, thickness)
+
+        cv2.line(img, (center_x, y_pos), (end_x, y_pos), 0, thickness)
+    
+    elif digit == 6:
+        horiz_end_x = int(center_x + x_dir * symbol_size)
+        
+        vert_end_y = int(y_pos - y_dir * symbol_size)
+        cv2.line(img, (horiz_end_x, y_pos), (horiz_end_x, vert_end_y), 0, thickness)
+    
+    elif digit == 7:
         horiz_end_x = int(center_x + x_dir * symbol_size)
         cv2.line(img, (center_x, y_pos), (horiz_end_x, y_pos), 0, thickness)
         
@@ -115,53 +143,13 @@ def draw_digit(img, digit, center_x, y_pos, quadrant, thickness):
         vert_end_y = int(y_pos - y_dir * symbol_size)
         cv2.line(img, (horiz_end_x, y_pos), (horiz_end_x, vert_end_y), 0, thickness)
     
-    elif digit == 3:
-        # 3: Diagonal line from stem (up for top quadrants, down for bottom quadrants)
-        end_x = int(center_x + x_dir * symbol_size)
-        end_y = int(y_pos - y_dir * symbol_size)
-        cv2.line(img, (center_x, y_pos), (end_x, end_y), 0, thickness)
-    
-    elif digit == 4:
-        # 4: Diagonal line with vertical at end (like Z)
-        # Diagonal line
-        end_x = int(center_x + x_dir * symbol_size)
-        end_y = int(y_pos - y_dir * symbol_size)
-        cv2.line(img, (center_x, y_pos), (end_x, end_y), 0, thickness)
-        
-        # Vertical line at end of diagonal
-        cv2.line(img, (end_x, end_y), (end_x, y_pos), 0, thickness)
-    
-    elif digit == 5:
-        # 5: Diagonal with horizontal at end (like \_)
-        # Diagonal line
-        end_x = int(center_x + x_dir * symbol_size)
-        end_y = int(y_pos - y_dir * symbol_size)
-        cv2.line(img, (center_x, y_pos), (end_x, end_y), 0, thickness)
-        
-        # Horizontal line at end
-        cv2.line(img, (end_x, end_y), (center_x, end_y), 0, thickness)
-    
-    elif digit == 6:
-        # 6: Vertical line along the stem
-        vert_end_y = int(y_pos - y_dir * symbol_size)
-        cv2.line(img, (center_x, y_pos), (center_x, vert_end_y), 0, thickness)
-    
-    elif digit == 7:
-        # 7: Vertical line at stem with horizontal at end
-        vert_end_y = int(y_pos - y_dir * symbol_size)
-        cv2.line(img, (center_x, y_pos), (center_x, vert_end_y), 0, thickness)
-        
-        horiz_end_x = int(center_x + x_dir * symbol_size)
-        cv2.line(img, (center_x, vert_end_y), (horiz_end_x, vert_end_y), 0, thickness)
     
     elif digit == 8:
-        # 8: ⊣ shape (horizontal with vertical at the end)
-        # Horizontal line
-        horiz_end_x = int(center_x + x_dir * symbol_size)
-        cv2.line(img, (center_x, y_pos), (horiz_end_x, y_pos), 0, thickness)
         
-        # Vertical line at the end
+        horiz_end_x = int(center_x + x_dir * symbol_size)
         vert_end_y = int(y_pos - y_dir * symbol_size)
+        
+        cv2.line(img, (center_x, vert_end_y), (horiz_end_x, vert_end_y), 0, thickness)    
         cv2.line(img, (horiz_end_x, y_pos), (horiz_end_x, vert_end_y), 0, thickness)
     
     elif digit == 9:
@@ -174,6 +162,12 @@ def draw_digit(img, digit, center_x, y_pos, quadrant, thickness):
         cv2.line(img, (horiz_end_x, y_pos), (horiz_end_x, vert_end_y), 0, thickness)  # Right
         cv2.line(img, (horiz_end_x, vert_end_y), (center_x, vert_end_y), 0, thickness)  # Top
         # Left side is the stem itself
+        
+def save_image_to_file(img, filename):
+    """Save the image to a file."""
+    # Ensure the directory exists
+    os.makedirs('created_numbers', exist_ok=True)
+    cv2.imwrite('created_numbers/' + filename, img)
 
 def number_to_cistercian_image(number):
     """Convert a number to a Cistercian numeral image and return as base64."""
@@ -186,6 +180,8 @@ def number_to_cistercian_image(number):
     
     # Draw the Cistercian numeral
     img = draw_cistercian_symbol(img, number)
+    
+    save_image_to_file(img, f'cistercian_{number}.png')
     
     # Return base64 encoded image
     return encode_image_to_base64(img)

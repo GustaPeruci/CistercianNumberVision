@@ -1,0 +1,10 @@
+email-validator
+flask
+flask-sqlalchemy
+gunicorn
+numpy
+opencv-python
+pillow
+psycopg2-binary
+werkzeug
+pytesseract

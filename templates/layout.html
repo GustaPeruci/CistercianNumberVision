@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="pt-BR" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cistercian Numeral Converter</title>
+    <title>Conversor de Algarismos Cistercienses</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
     
-    <!-- Custom CSS -->
+    <!-- CSS Personalizado -->
     <link href="{{ url_for('static', filename='css/custom.css') }}" rel="stylesheet">
     
     <!-- Font Awesome Icons -->
@@ -19,17 +19,17 @@
         <div class="container">
             <a class="navbar-brand" href="/">
                 <i class="fas fa-hashtag me-2"></i>
-                Cistercian Numeral Converter
+                Conversor de Algarismos Cistercienses
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Alternar navegação">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="#about-cistercian" data-bs-toggle="modal" data-bs-target="#aboutModal">
-                            <i class="fas fa-info-circle me-1"></i> About Cistercian Numerals
+                            <i class="fas fa-info-circle me-1"></i> Sobre os Algarismos Cistercienses
                         </a>
                     </li>
                 </ul>
@@ -41,40 +41,40 @@
         {% block content %}{% endblock %}
     </div>
     
-    <!-- About Cistercian Numerals Modal -->
+    <!-- Modal Sobre Algarismos Cistercienses -->
     <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="aboutModalLabel">About Cistercian Numerals</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title" id="aboutModalLabel">Sobre os Algarismos Cistercienses</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Cistercian numerals, also called monk's numerals, were developed by Cistercian monks in the early 13th century. This numeral system is remarkable for its ability to encode numbers from 1 to 9999 in a single symbol.</p>
+                    <p>Os algarismos cistercienses, também chamados de numerais monásticos, foram desenvolvidos por monges cistercienses no início do século XIII. Este sistema numérico é notável por sua capacidade de codificar números de 1 a 9999 em um único símbolo.</p>
                     
-                    <h5>How Cistercian Numerals Work:</h5>
-                    <p>The system uses a vertical stem with different marks in four quadrants:</p>
+                    <h5>Como Funcionam os Algarismos Cistercienses:</h5>
+                    <p>O sistema utiliza um traço vertical com diferentes marcas em quatro quadrantes:</p>
                     <ul>
-                        <li><strong>Bottom Right:</strong> Units (1-9)</li>
-                        <li><strong>Top Right:</strong> Tens (10-90)</li>
-                        <li><strong>Bottom Left:</strong> Hundreds (100-900)</li>
-                        <li><strong>Top Left:</strong> Thousands (1000-9000)</li>
+                        <li><strong>Inferior Direito:</strong> Unidades (1–9)</li>
+                        <li><strong>Superior Direito:</strong> Dezenas (10–90)</li>
+                        <li><strong>Inferior Esquerdo:</strong> Centenas (100–900)</li>
+                        <li><strong>Superior Esquerdo:</strong> Milhares (1000–9000)</li>
                     </ul>
                     
-                    <p>Each digit from 1-9 has a unique symbol that is placed in the appropriate quadrant to represent its place value.</p>
+                    <p>Cada dígito de 1 a 9 possui um símbolo único que é colocado no quadrante apropriado para representar seu valor posicional.</p>
                     
-                    <h5>Examples:</h5>
+                    <h5>Exemplos:</h5>
                     <ul>
-                        <li>1: A horizontal line extending from the stem to the right at the bottom</li>
-                        <li>10: A horizontal line extending from the stem to the right at the top</li>
-                        <li>100: A horizontal line extending from the stem to the left at the bottom</li>
-                        <li>1000: A horizontal line extending from the stem to the left at the top</li>
+                        <li>1: Uma linha horizontal saindo do traço para a direita na parte inferior</li>
+                        <li>10: Uma linha horizontal saindo do traço para a direita na parte superior</li>
+                        <li>100: Uma linha horizontal saindo do traço para a esquerda na parte inferior</li>
+                        <li>1000: Uma linha horizontal saindo do traço para a esquerda na parte superior</li>
                     </ul>
                     
-                    <p>This application allows you to convert between regular numbers and their Cistercian numeral representations, as well as recognize Cistercian numerals using computer vision technology.</p>
+                    <p>Este aplicativo permite converter entre números arábicos e suas representações cistercienses, assim como reconhecer símbolos cistercienses por meio de tecnologia de visão computacional.</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
                 </div>
             </div>
         </div>
@@ -82,14 +82,14 @@
 
     <footer class="bg-dark text-center text-white-50 py-3 mt-5">
         <div class="container">
-            <p>Cistercian Numeral Converter | Computer Vision Project</p>
+            <p>Conversor de Algarismos Cistercienses | Projeto de Visão Computacional</p>
         </div>
     </footer>
 
-    <!-- Bootstrap Bundle with Popper -->
+    <!-- Bootstrap Bundle com Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Custom JavaScript -->
+    <!-- JavaScript Personalizado -->
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>

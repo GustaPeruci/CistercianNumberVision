@@ -5,46 +5,46 @@
     <div class="col-md-8 offset-md-2">
         <div class="card">
             <div class="card-body">
-                <h3 class="card-title text-center mb-4">Cistercian Numeral Converter</h3>
+                <h3 class="card-title text-center mb-4">Conversor de Algarismos Cistercienses</h3>
                 
                 <ul class="nav nav-tabs" id="conversionTabs" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active" id="number-to-cistercian-tab" data-bs-toggle="tab"
                                 data-bs-target="#number-to-cistercian" type="button" role="tab"
                                 aria-controls="number-to-cistercian" aria-selected="true">
-                            Number to Cistercian
+                            Número para Cisterciense
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="cistercian-to-number-tab" data-bs-toggle="tab"
                                 data-bs-target="#cistercian-to-number" type="button" role="tab"
                                 aria-controls="cistercian-to-number" aria-selected="false">
-                            Cistercian to Number
+                            Cisterciense para Número
                         </button>
                     </li>
                 </ul>
                 
                 <div class="tab-content" id="conversionTabsContent">
-                    <!-- Number to Cistercian Tab -->
+                    <!-- Aba: Número para Cisterciense -->
                     <div class="tab-pane fade show active" id="number-to-cistercian" role="tabpanel"
                          aria-labelledby="number-to-cistercian-tab">
                         <div class="mb-3">
-                            <label for="number-input" class="form-label">Enter a number (0-9999):</label>
+                            <label for="number-input" class="form-label">Digite um número (0-9999):</label>
                             <div class="input-group">
                                 <input type="number" class="form-control" id="number-input" 
-                                       placeholder="Enter a number" min="0" max="9999">
+                                       placeholder="Digite um número" min="0" max="9999">
                                 <button class="btn btn-primary" id="convert-button">
-                                    <i class="fas fa-exchange-alt me-1"></i> Convert
+                                    <i class="fas fa-exchange-alt me-1"></i> Converter
                                 </button>
                             </div>
-                            <div class="form-text">Enter any number between 0 and 9999 to see its Cistercian representation.</div>
+                            <div class="form-text">Digite um número entre 0 e 9999 para ver sua representação cisterciense.</div>
                         </div>
                         
                         <div class="loading" id="conversion-loading">
                             <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
+                                <span class="visually-hidden">Carregando...</span>
                             </div>
-                            <p class="mt-2">Converting number to Cistercian numeral...</p>
+                            <p class="mt-2">Convertendo número para numeral cisterciense...</p>
                         </div>
                         
                         <div class="error-message" id="conversion-error" style="display: none;"></div>
@@ -52,7 +52,7 @@
                         <div class="result-container mt-3" id="cistercian-result"></div>
                     </div>
                     
-                    <!-- Cistercian to Number Tab -->
+                    <!-- Aba: Cisterciense para Número -->
                     <div class="tab-pane fade" id="cistercian-to-number" role="tabpanel"
                          aria-labelledby="cistercian-to-number-tab">
                         <ul class="nav nav-pills mb-3" id="recognitionTabs" role="tablist">
@@ -60,50 +60,50 @@
                                 <button class="nav-link active" id="upload-tab" data-bs-toggle="pill"
                                         data-bs-target="#upload-image" type="button" role="tab"
                                         aria-controls="upload-image" aria-selected="true">
-                                    Upload Image
+                                    Enviar Imagem
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="draw-tab" data-bs-toggle="pill"
                                         data-bs-target="#draw-image" type="button" role="tab"
                                         aria-controls="draw-image" aria-selected="false">
-                                    Draw Symbol
+                                    Desenhar Símbolo
                                 </button>
                             </li>
                         </ul>
                         
                         <div class="tab-content" id="recognitionTabsContent">
-                            <!-- Upload Image Tab -->
+                            <!-- Aba: Enviar Imagem -->
                             <div class="tab-pane fade show active" id="upload-image" role="tabpanel"
                                  aria-labelledby="upload-tab">
                                 <div class="mb-3">
-                                    <label for="file-input" class="form-label">Upload an image of a Cistercian numeral:</label>
+                                    <label for="file-input" class="form-label">Envie uma imagem de um numeral cisterciense:</label>
                                     <input type="file" class="form-control d-none" id="file-input" accept="image/*">
                                     <div class="drag-drop-area" id="drag-drop-area">
                                         <i class="fas fa-upload fa-2x mb-2"></i>
-                                        <p>Drag & drop an image here or click to browse</p>
-                                        <p class="text-muted" id="file-name">No file selected</p>
+                                        <p>Arraste e solte uma imagem aqui ou clique para procurar</p>
+                                        <p class="text-muted" id="file-name">Nenhum arquivo selecionado</p>
                                     </div>
                                     <button class="btn btn-primary w-100" id="recognize-button" disabled>
-                                        <i class="fas fa-search me-1"></i> Recognize Numeral
+                                        <i class="fas fa-search me-1"></i> Reconhecer Número
                                     </button>
                                 </div>
                             </div>
                             
-                            <!-- Draw Symbol Tab -->
+                            <!-- Aba: Desenhar Símbolo -->
                             <div class="tab-pane fade" id="draw-image" role="tabpanel"
                                  aria-labelledby="draw-tab">
                                 <div class="mb-3">
-                                    <p>Draw a Cistercian numeral below:</p>
+                                    <p>Desenhe um numeral cisterciense abaixo:</p>
                                     <div class="canvas-container">
                                         <canvas id="drawing-canvas" class="cistercian-canvas" width="300" height="400"></canvas>
                                     </div>
                                     <div class="canvas-tools mt-2">
                                         <button class="btn btn-secondary" id="clear-canvas">
-                                            <i class="fas fa-eraser me-1"></i> Clear
+                                            <i class="fas fa-eraser me-1"></i> Limpar
                                         </button>
                                         <button class="btn btn-primary" id="recognize-canvas">
-                                            <i class="fas fa-search me-1"></i> Recognize
+                                            <i class="fas fa-search me-1"></i> Reconhecer
                                         </button>
                                     </div>
                                 </div>
@@ -112,9 +112,9 @@
                         
                         <div class="loading" id="recognition-loading">
                             <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
+                                <span class="visually-hidden">Carregando...</span>
                             </div>
-                            <p class="mt-2">Recognizing Cistercian numeral...</p>
+                            <p class="mt-2">Reconhecendo numeral cisterciense...</p>
                         </div>
                         
                         <div class="error-message" id="recognition-error" style="display: none;"></div>
@@ -125,28 +125,28 @@
             </div>
         </div>
         
-        <!-- Quick Reference Guide -->
+        <!-- Guia de Referência Rápida -->
         <div class="card mt-4">
             <div class="card-header">
-                <h5 class="mb-0">Cistercian Numeral Quick Reference</h5>
+                <h5 class="mb-0">Guia Rápido de Numerais Cistercienses</h5>
             </div>
             <div class="card-body">
-                <p>Cistercian numerals represent digits 0-9 in four quadrants around a vertical stem:</p>
+                <p>Os numerais cistercienses representam os dígitos de 0 a 9 em quatro quadrantes ao redor de um traço vertical:</p>
                 <div class="row">
                     <div class="col-md-6">
                         <ul>
-                            <li><strong>Units (1-9):</strong> Bottom-right quadrant</li>
-                            <li><strong>Tens (10-90):</strong> Top-right quadrant</li>
+                            <li><strong>Unidades (1-9):</strong> Quadrante inferior direito</li>
+                            <li><strong>Dezenas (10-90):</strong> Quadrante superior direito</li>
                         </ul>
                     </div>
                     <div class="col-md-6">
                         <ul>
-                            <li><strong>Hundreds (100-900):</strong> Bottom-left quadrant</li>
-                            <li><strong>Thousands (1000-9000):</strong> Top-left quadrant</li>
+                            <li><strong>Centenas (100-900):</strong> Quadrante inferior esquerdo</li>
+                            <li><strong>Milhares (1000-9000):</strong> Quadrante superior esquerdo</li>
                         </ul>
                     </div>
                 </div>
-                <p class="mb-0">The numeral system can represent numbers from 0 to 9999 with a single symbol.</p>
+                <p class="mb-0">O sistema pode representar números de 0 a 9999 com um único símbolo.</p>
             </div>
         </div>
     </div>
