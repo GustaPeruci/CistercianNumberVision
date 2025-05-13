@@ -5,9 +5,10 @@ import logging
 import hashlib
 import pickle
 
-# Configurar logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
+
+STANDARD_SIZE = (128, 256)
 
 def image_hash(img):
     return hashlib.sha256(img.tobytes()).hexdigest()
@@ -26,8 +27,6 @@ def load_templates(template_folder="created_numbers"):
             templates[value] = pre
             hashes[h] = value
     return templates, hashes
-
-STANDARD_SIZE = (128, 256)
 
 def preprocess_image_from_array(image_array):
     image_array = cv2.resize(image_array, STANDARD_SIZE)
