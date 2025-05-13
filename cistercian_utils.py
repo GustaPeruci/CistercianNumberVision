@@ -200,6 +200,6 @@ def generate_all_cistercian_templates():
     
     print("✅ Todas as 9999 imagens foram geradas com sucesso na pasta 'created_numbers/'")
 
-# generate_all_cistercian_templates()
+generate_all_cistercian_templates()
 
 

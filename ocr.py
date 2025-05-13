@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import logging
 import hashlib
+import pickle
 
 # Configurar logging
 logging.basicConfig(level=logging.DEBUG)
@@ -26,8 +27,11 @@ def load_templates(template_folder="created_numbers"):
             hashes[h] = value
     return templates, hashes
 
+STANDARD_SIZE = (128, 256)
+
 def preprocess_image_from_array(image_array):
-    _, thresh = cv2.threshold(image_array, 127, 255, cv2.THRESH_BINARY_INV)
+    image_array = cv2.resize(image_array, STANDARD_SIZE)
+    _, thresh = cv2.threshold(image_array, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)
     return thresh
 
 def match_template(input_img, templates):
@@ -50,4 +54,15 @@ def recognize_cistercian_numeral(image_array, hashes=None):
     value = hashes.get(h)
     logger.info(f"Reconhecimento: {value} (hash match)")
     return value
+
+def save_hash_cache(templates, hashes, filename="template_cache.pkl"):
+    with open(filename, 'wb') as f:
+        pickle.dump((templates, hashes), f)
+
+def load_hash_cache(filename="template_cache.pkl"):
+    if os.path.exists(filename):
+        with open(filename, 'rb') as f:
+            return pickle.load(f)
+    return None, None
+
 

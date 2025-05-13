@@ -8,7 +8,7 @@ import io
 import base64
 
 from cistercian_utils import number_to_cistercian_image, decode_base64_image
-from ocr import recognize_cistercian_numeral, load_templates
+from ocr import load_hash_cache, recognize_cistercian_numeral, load_templates, save_hash_cache
 
 # Create Flask app
 app = Flask(__name__)
@@ -78,7 +78,11 @@ def recognize_cistercian():
         if image is None:
             return jsonify({'error': 'Could not process the image'}), 400
 
-        templates, hashes = load_templates("created_numbers")
+        templates, hashes = load_hash_cache()
+        if templates is None:
+            templates, hashes = load_templates("created_numbers")
+            save_hash_cache(templates, hashes)
+
         number = recognize_cistercian_numeral(image, hashes=hashes)
 
 
